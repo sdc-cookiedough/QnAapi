@@ -42,7 +42,7 @@ alter sequence answers_id_seq restart with 6879307;
 CREATE TABLE IF NOT EXISTS answers_photo(
     id serial,
     answer_id int not null,
-    url texts, 
+    url text, 
     primary key(id),
     foreign key(answer_id) references answers(id)
 )

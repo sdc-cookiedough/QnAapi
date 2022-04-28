@@ -3,7 +3,7 @@ require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 1337;
 //const query = require('../db/queries');
-const db= require('../../db')
+const db= require('../db')
 
 app.use('/', (req, res, next) => {
   console.log(`${req.method} at ${req.url}`);
@@ -16,6 +16,7 @@ app.get('/',(req,res)=>{
     res.send("working")
 })
 app.get('/questions',(req,res)=>{
+ let product_id=req.query.product_id
     let response = {};
     db.query(
       `select
@@ -48,7 +49,7 @@ app.get('/questions',(req,res)=>{
          answers 
          where 
          answers.question=questions.question_id))),'[]'::json)as results
-    from questions where questions.product_id = 1`,
+    from questions where questions.product_id = ${product_id}`,
       (err, result) => {
         if (err) {
           res.status(500).send("wrong query");
@@ -61,6 +62,7 @@ app.get('/questions',(req,res)=>{
 })
 
 app.get('/answers',(req,res)=>{
+  let question=req.query.question
     db.query(
         `select
         coalesce(json_agg(
@@ -75,12 +77,13 @@ app.get('/answers',(req,res)=>{
                     json_build_object(
                         'id',answers_photo.id,
                         'url',answers_photo.url)),'[]'::json) from answers_photo where answers_photo.answer_id=answers.id))),'[]'::json)as results
-                        from answers where answers.question=1`,
+                        from answers where answers.question=${question}`,
         (err, result) => {
           if (err) {
             res.status(500).send("wrong query");
           } else {
             let response = {};
+            response.question=question;
             response.results = result.rows[0].results;
             // console.log("answers result.rows>>>>",response)
             res.status(200).send(response);
